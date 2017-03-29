@@ -1,30 +1,41 @@
 import numpy as np
+import experiment as e
 import multiprocessing as mp
+import json
 
 POOL_SIZE = mp.cpu_count()
 
-#p: process pool
-#fs: list of estimation algorithms
-#ds: list of samples
-#returns a list of lists, [[f1d1,f1d2,f1d3...],[f2d1,f2d2,f2d3...]...]
-def applyAlgs(p, fs, ds):
-    return list(map(lambda f: p.map_async(f,ds), fs))
+#takes input frame and width of sample in bytes and transforms it into a number between -1 and 1, assuming it is signed
+def squash(input, width = 2):
+    return((input / (2 ** ((8 * width) - 1))) - 1)
 
-#p: process pool
-#evals: list of evaluation algorithms
-#correct: list of correct answers
-#resultsList: list of lists as given by applyAlgs
-#returns list of list of lists [[[f1e1d1,f1e1d2...],[f1e2d1,f1e2d2...]...][[f2e1d1,f2e1d2...],[f2e2d1,f2e2d2...]...]...]
-def evalAlgs(p, evals, correct, resultsList):
-    return [[p.starmap_async(j, zip(correct, i)) for j in evals] for i in resultsList]
+#reverses squash()
+def unsquash(input, width = 2):
+    return(input * (2 ** ((8 * width) - 1)))
 
-#p: process pool
-#evals: list of evaluation algorithms
-#correct: list of correct answers
-#resultsList: list of lists as given by applyAlgs
-#returns list of lists [[f1e1ds, f1e2ds...],[f2e1ds,f2e2ds...]...]
-def evalAlgs2(p, evals, correct, resultsList):
-    return [[p.apply_async(f, args = (correct, i)) for f in evals] for i in resultsList]
+vsquash = np.vectorize(squash) #might want to do this in parallel once i find out better what the overhead would be
+vunsquash = np.vectorize(unsquash)
+
+
+class sample():
+    def __init__(self, target = None, samples = None, json = None):
+        if(json): self.fromjson
+        self.target = target #might want to see if it would be easy to insure correct numpy array types
+        self.samples = samples
+
+    def fromjson(self, filename):
+        json_data = json.load(open(filename))
+        filename.close()
+        targetfile = wave.open(json_data['target'])
+        self.target = np.fromstring(targetfile.readframes(file.getnframes()),dtype = 'int16')
+        self.target = vsquash(self.target)
+        targetfile.close()
+        samplefiles = json_data['samples']
+        samplefiles = map(wave.open, samplefiles)
+        self.samples = np.zeros((len(self.target), len(samplefiles)))
+        for s, i in enumerate(samplefiles):
+            sample = vsquash(np.fromstring(x.readframes(file.getnframes()), dtype = 'int16'))
+            self.samples[i] = sample[i,:len(target)]
 
 def main():
     pool = mp.Pool(processes = POOL_SIZE)

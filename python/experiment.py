@@ -1,7 +1,7 @@
 import numpy as np
-import multiprocessing as mp
+import multiprocessing as mp #change to dummy to check speed of threads vs processes
 
-POOL_SIZE = mp.cpu_count()
+POOL_SIZE = mp.cpu_count() #doesnt work with dummy
 
 #p: process pool
 #fs: list of estimation algorithms
@@ -25,9 +25,3 @@ def evalAlgs(p, evals, correct, resultsList):
 #returns list of lists [[f1e1ds, f1e2ds...],[f2e1ds,f2e2ds...]...]
 def evalAlgs2(p, evals, correct, resultsList):
     return [[p.apply_async(f, args = (correct, i)) for f in evals] for i in resultsList]
-
-def main():
-    pool = mp.Pool(processes = POOL_SIZE)
-
-if __name__ == '__main__':
-    main()
