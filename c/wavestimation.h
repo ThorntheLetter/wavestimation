@@ -11,9 +11,8 @@ typedef struct garray{
     void* data; // pointer to array data
 } garray;
 
-// UNTESTED, but it compiles
 // fs is garray with data pointing to an array of pointers to functions that take and return a garray
-// xs is garray pointing to input
+// xs is garray pointing to the array of input garrays
 // returns a garray pointing to an array of garrays that contain arrays of output
 garray applyAlgs(garray fs, garray xs);
 

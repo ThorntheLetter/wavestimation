@@ -1,4 +1,10 @@
+*
+!*.*
+!*/
 *.o
 *.hi
 *.s
 *.S
+*.out
+__pycache__
+rust
